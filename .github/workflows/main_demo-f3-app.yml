@@ -68,7 +68,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_419E4DCFA33B4C75872C34BBEE902632 }}
 
       - name: Restart Azure App Service
-        run: az webapp restart --name demo-f3-app --resource-group <your-resource-group>
+        run: az webapp restart --name demo-f3-app --resource-group demo-f3-resource-group
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3

@@ -78,4 +78,5 @@ jobs:
         with:
           app-name: 'demo-f3-app'
           slot-name: 'Production'
+          debug: true
           

@@ -139,20 +139,23 @@ Answer:"""
         providers_to_try = []
         
         # Get the configured provider
-        provider = self.config.get('llm', {}).get('provider', 'fallback').lower()
+        provider = self.config.get('llm', {}).get('provider', 'tinyllama').lower()
         
         # Add the configured provider first
-        if provider == 'anthropic' and 'anthropic' in self.config and self.config['anthropic'].get('api_key'):
+        if provider == 'anthropic':
             providers_to_try.append(('anthropic', self._generate_anthropic_response))
-        elif provider == 'local_api' and 'local' in self.config and self.config['local'].get('endpoint'):
+        elif provider == 'local_api':
             providers_to_try.append(('local_api', self._generate_local_api_response))
-        elif provider == 'tinyllama' and hasattr(self, 'local_model') and self.local_model is not None:
+        else:  # Default to TinyLlama
             providers_to_try.append(('tinyllama', self._generate_tinyllama_response))
-        elif provider == 'distilgpt2' and 'llm' in self.config:
-            providers_to_try.append(('distilgpt2', self._generate_distilgpt2_response))
         
-        # Add fallback provider if not already in the list
-        providers_to_try.append(('fallback', self._generate_fallback_response))
+        # Add fallback providers
+        if provider != 'local_api':
+            providers_to_try.append(('local_api', self._generate_local_api_response))
+        if provider != 'anthropic':
+            providers_to_try.append(('anthropic', self._generate_anthropic_response))
+        if provider != 'tinyllama':
+            providers_to_try.append(('tinyllama', self._generate_tinyllama_response))
         
         # Try each provider in sequence
         last_error = None
@@ -173,7 +176,6 @@ Answer:"""
         error_msg = str(last_error) if last_error else "Unknown error"
         print(f"[ERROR] All providers failed. Last error: {error_msg}")
         
-        # Return a fallback response as last resort
         return "I encountered an error while generating a response. Please try a different question or try again later."
 
     def _generate_anthropic_response(self, prompt: str) -> str:
@@ -408,7 +410,6 @@ Instructions:
             print(f"[ERROR] Error in generate_code: {e}")
             traceback.print_exc()
             return f"Error generating code: {str(e)}"
-
 
 
 

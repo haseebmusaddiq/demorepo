@@ -1,4 +1,4 @@
-import os
+import os 
 import glob
 from typing import List, Tuple, Dict, Any
 from PyPDF2 import PdfReader  # Use PyPDF2 instead of PyMuPDF

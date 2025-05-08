@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional Knowledge Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Pakistan Code-inspired theme */
+        :root {
+            /* Color palette based on pakistancode.gov.pk */
+            --primary-color: #006747;      /* Dark green - main color */
+            --secondary-color: #01411c;    /* Darker green - Pakistan flag green */
+            --accent-color: #8cc63f;       /* Light green accent */
+            --success-color: #006747;      /* Same as primary for consistency */
+            --danger-color: #c62828;       /* Dark red */
+            --warning-color: #f9a825;      /* Amber/gold */
+            --info-color: #0277bd;         /* Blue */
+            --dark-color: #333333;         /* Dark grey */
+            --light-color: #f5f5f5;        /* Off-white */
+            --border-color: #e0e0e0;       /* Light grey for borders */
+            
+            /* Button colors */
+            --btn-primary: #006747;
+            --btn-primary-hover: #005238;
+            --btn-success: #006747;
+            --btn-success-hover: #005238;
+            --btn-danger: #c62828;
+            --btn-danger-hover: #b71c1c;
+            --btn-info: #0277bd;
+            --btn-info-hover: #01579b;
+            --btn-secondary: #616161;
+            --btn-secondary-hover: #424242;
+        }
+        
+        /* Body styling */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-color);
+            color: #333333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Navigation bar - Pakistan Code style */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 1.4rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .navbar-nav .nav-link:hover, 
+        .navbar-nav .nav-link.active {
+            color: white;
+            background-color: var(--secondary-color);
+        }
+
+        .navbar-nav .nav-link i {
+            margin-right: 5px;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+
+        .theme-toggle-btn:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Header styling */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark-color);
+            padding: 1.5rem 0;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        /* Card styling */
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-body {
+            padding: 15px;
+            background-color: white;
+        }
+        
+        /* Button styling - Pakistan Code style */
+        .btn {
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            box-shadow: none;
+            padding: 0.5rem 1.25rem;
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+            color: white;
+        }
+
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--btn-primary-hover);
+            border-color: var(--btn-primary-hover);
+            box-shadow: 0 2px 5px rgba(0, 103, 71, 0.2);
+        }
+
+        .btn-success {
+            background-color: var(--btn-success);
+            border-color: var(--btn-success);
+            color: white;
+        }
+
+        .btn-success:hover, .btn-success:focus {
+            background-color: var(--btn-success-hover);
+            border-color: var(--btn-success-hover);
+            box-shadow: 0 2px 5px rgba(0, 103, 71, 0.2);
+        }
+
+        .btn-danger {
+            background-color: var(--btn-danger);
+            border-color: var(--btn-danger);
+            color: white;
+        }
+
+        .btn-danger:hover, .btn-danger:focus {
+            background-color: var(--btn-danger-hover);
+            border-color: var(--btn-danger-hover);
+            box-shadow: 0 2px 5px rgba(198, 40, 40, 0.3);
+        }
+
+        .btn-danger:focus {
+            box-shadow: 0 0 0 3px rgba(198, 40, 40, var(--btn-focus-ring-opacity));
+        }
+
+        .btn-info {
+            background-color: var(--btn-info);
+            border-color: var(--btn-info);
+            color: white;
+        }
+
+        .btn-info:hover, .btn-info:focus {
+            background-color: var(--btn-info-hover);
+            border-color: var(--btn-info-hover);
+            box-shadow: 0 2px 5px rgba(2, 136, 209, 0.3);
+            color: white;
+        }
+
+        .btn-info:focus {
+            box-shadow: 0 0 0 3px rgba(2, 136, 209, var(--btn-focus-ring-opacity));
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-secondary);
+            border-color: var(--btn-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover, .btn-secondary:focus {
+            background-color: var(--btn-secondary-hover);
+            border-color: var(--btn-secondary-hover);
+            box-shadow: 0 2px 5px rgba(84, 110, 122, 0.3);
+        }
+
+        .btn-secondary:focus {
+            box-shadow: 0 0 0 3px rgba(84, 110, 122, var(--btn-focus-ring-opacity));
+        }
+
+        /* Button with icon styling */
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-icon i {
+            font-size: 1.1em;
+        }
+
+        /* Specific application buttons */
+        #indexButton {
+            background-color: var(--btn-primary);
+            border-color: var(--btn-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        #indexButton:hover {
+            background-color: var(--btn-primary-hover);
+            border-color: var(--btn-primary-hover);
+            box-shadow: 0 2px 5px rgba(0, 103, 71, 0.2);
+        }
+
+        /* Update generateAnswerBtn */
+        #generateAnswerBtn {
+            background-color: var(--btn-success);
+            border-color: var(--btn-success);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        #generateAnswerBtn:hover {
+            background-color: var(--btn-success-hover);
+            border-color: var(--btn-success-hover);
+            box-shadow: 0 2px 5px rgba(0, 103, 71, 0.2);
+        }
+
+        /* Update generateNegateAnswerBtn to be more professional */
+        #generateNegateAnswerBtn {
+            background-color: #6c757d;  /* Bootstrap's secondary color */
+            border-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        #generateNegateAnswerBtn:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+            box-shadow: 0 2px 5px rgba(108, 117, 125, 0.2);
+        }
+
+        #generateNegateAnswerBtn:active {
+            background-color: #545b62;
+            border-color: #4e555b;
+        }
+
+        /* Update copy button */
+        .copy-button {
+            background: linear-gradient(135deg, #455a64, #607d8b);
+            border: none;
+            color: white;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .copy-button:hover {
+            background: linear-gradient(135deg, #546e7a, #78909c);
+            box-shadow: 0 4px 10px rgba(69, 90, 100, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Disabled state for all buttons */
+        .btn:disabled, .btn.disabled {
+            opacity: 0.65;
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        /* Active state for all buttons */
+        .btn:active, .btn.active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+        
+        .index-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        #indexButton {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #indexStatus {
+            margin-left: 15px;
+            font-style: italic;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: rgba(0,0,0,0.03);
+        }
+        
+        .query-section {
+            margin-bottom: 30px;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.25);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        #generateAnswerBtn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #generateAnswerBtn:hover {
+            background-color: #2f855a;
+        }
+        
+        #generateNegateAnswerBtn {
+            background-color: var(--danger-color, #dc3545);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #generateNegateAnswerBtn:hover {
+            background-color: #bd2130;
+        }
+        
+        .results-container {
+            margin-top: 30px;
+        }
+        
+        .result-section, .sources-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        #negateAnswerSection, #negateSourcesSection {
+            background-color: rgba(108, 117, 125, 0.05);
+            border-left: 4px solid #6c757d;
+        }
+        
+        .header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .copy-button {
+            background-color: var(--info-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .copy-button:hover {
+            background-color: #3182ce;
+        }
+        
+        #generatedAnswer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        #negateAnswer {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .source {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .source p {
+            margin: 5px 0;
+        }
+        
+        .source strong {
+            color: var(--primary-color);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        
+        .loading:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: #7f8c8d;
+                text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow: .25em 0 0 #7f8c8d, .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow: .25em 0 0 #7f8c8d, .5em 0 0 #7f8c8d;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            background-color: #f8f9fa;
+        }
+        
+        /* Navigation bar */
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+            border-radius: 4px;
+        }
+        
+        .navbar-nav .nav-link:hover, 
+        .navbar-nav .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar-nav .nav-link i {
+            margin-right: 5px;
+        }
+        
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+        
+        .theme-toggle-btn:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Tabs styling */
+        .nav-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--secondary-color);
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 0;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            background-color: rgba(26, 60, 108, 0.05);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 600;
+            background-color: transparent;
+            border: none;
+        }
+        
+        .nav-tabs .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        .nav-tabs .nav-link i {
+            margin-right: 5px;
+        }
+        
+        /* Feature cards */
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        /* Source items */
+        .source-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--info-color);
+        }
+        
+        /* Activity and Stats styling */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 103, 71, 0.05);
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        .bg-opacity-10 {
+            opacity: 0.1;
+        }
+
+        .rounded-circle {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .font-weight-bold {
+            font-weight: 600 !important;
+        }
+
+        /* Make sure the table is not too tall */
+        .table-responsive {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Custom scrollbar for the table */
+        .table-responsive::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="https://cdn-icons-png.flaticon.com/512/3735/3735092.png" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
+                Constitutional Explorer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/"><i class="bi bi-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/constitutional_dashboard"><i class="bi bi-book"></i> Constitutional Data</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload"><i class="bi bi-upload"></i> Upload</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Banner -->
+    <div class="flash-banner" id="flashBanner">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="flash-message">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <span id="flashMessage">Welcome to Constitutional Explorer! The system has been updated with new features.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" aria-label="Close" id="closeFlashBanner"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header section with Constitutional Explorer title and tagline completely removed -->
+        
+        <!-- Feature Cards with Images - Smaller Version -->
+        <div class="row mb-3">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 feature-card compact-card">
+                    <div class="card-img-top text-center pt-3">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3031/3031293.png" alt="Semantic Search" class="feature-image" style="height: 60px;">
+                    </div>
+                    <div class="card-body text-center py-2">
+                        <h5 class="feature-title">Semantic Search</h5>
+                        <p class="feature-description small mb-0">Find relevant constitutional provisions using natural language queries.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 feature-card compact-card">
+                    <div class="card-img-top text-center pt-3">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4616/4616734.png" alt="AI Assistant" class="feature-image" style="height: 60px;">
+                    </div>
+                    <div class="card-body text-center py-2">
+                        <h5 class="feature-title">AI Assistant</h5>
+                        <p class="feature-description small mb-0">Get intelligent answers to complex constitutional questions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 feature-card compact-card">
+                    <div class="card-img-top text-center pt-3">
+                        <img src="https://cdn-icons-png.flaticon.com/512/2641/2641616.png" alt="Analytics" class="feature-image" style="height: 60px;">
+                    </div>
+                    <div class="card-body text-center py-2">
+                        <h5 class="feature-title">Constitutional Analysis</h5>
+                        <p class="feature-description small mb-0">Analyze constitutional provisions with comprehensive insights.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="query-tab" data-bs-toggle="tab" data-bs-target="#query" type="button" role="tab" aria-controls="query" aria-selected="true">
+                    <i class="bi bi-search"></i> Query
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload" type="button" role="tab" aria-controls="upload" aria-selected="false">
+                    <i class="bi bi-upload"></i> Upload
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="mainTabsContent">
+            <!-- Query Tab -->
+            <div class="tab-pane fade show active" id="query" role="tabpanel" aria-labelledby="query-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-search"></i> Ask about Constitutional Law
+                    </div>
+                    <div class="card-body">
+                        <div class="index-section">
+                            <button id="indexButton" class="btn btn-primary">
+                                <i class="bi bi-database-fill"></i> Index Documents
+                            </button>
+                            <div id="indexStatus" class="ms-3">Documents not indexed yet</div>
+                        </div>
+                        
+                        <div class="query-section">
+                            <label for="answerQuery">What would you like to know about constitutions?</label>
+                            <textarea id="answerQuery" placeholder="Enter your question here... (e.g., 'What are the fundamental rights in modern constitutions?')"></textarea>
+                            <div class="button-group">
+                                <button id="generateAnswerBtn" type="button" class="btn btn-success">
+                                    <i class="bi bi-lightning-charge"></i> Generate Answer
+                                </button>
+                                <button id="generateNegateAnswerBtn" type="button" class="btn btn-danger">
+                                    <i class="bi bi-shuffle"></i> Generate Contrary Answer
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="results-container">
+                            <div class="result-section">
+                                <div class="header-with-button">
+                                    <h3>Answer</h3>
+                                    <button id="copyAnswerBtn" class="copy-button">
+                                        <i class="bi bi-clipboard"></i> Copy Answer
+                                    </button>
+                                </div>
+                                <div id="generatedAnswer">Your answer will appear here</div>
+                            </div>
+                            
+                            <div class="result-section" id="negateAnswerSection" style="display: none;">
+                                <div class="header-with-button">
+                                    <h3>Contrary Perspective</h3>
+                                    <button id="copyNegateAnswerBtn" class="copy-button">
+                                        <i class="bi bi-clipboard"></i> Copy Contrary Answer
+                                    </button>
+                                </div>
+                                <div id="generatedNegateAnswer">Your contrary answer will appear here</div>
+                            </div>
+                            
+                            <div class="sources-section">
+                                <div class="header-with-button">
+                                    <h3>Sources</h3>
+                                    <button id="copySourcesBtn" class="copy-button">
+                                        <i class="bi bi-clipboard"></i> Copy Sources
+                                    </button>
+                                </div>
+                                <div id="answerSources">Sources will appear here</div>
+                            </div>
+                            
+                            <div class="sources-section" id="negateSourcesSection" style="display: none;">
+                                <div class="header-with-button">
+                                    <h3>Contrary Sources</h3>
+                                    <button id="copyNegateSourcesBtn" class="copy-button">
+                                        <i class="bi bi-clipboard"></i> Copy Contrary Sources
+                                    </button>
+                                </div>
+                                <div id="negateAnswerSources">Contrary sources will appear here</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Documents Tab -->
+            <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-file-text"></i> Document Management
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-area">
+                            <i class="bi bi-cloud-upload"></i>
+                            <p>Drag and drop files here or click to upload</p>
+                            <button class="btn btn-primary">
+                                <i class="bi bi-upload"></i> Upload Files
+                            </button>
+                        </div>
+                        <div class="document-list">
+                            <h3>Indexed Documents</h3>
+                            <div class="document-item">
+                                <div class="document-info">
+                                    <i class="bi bi-file-earmark-text document-icon"></i>
+                                    <div class="document-name">Constitution of the United States</div>
+                                    <div class="document-meta">Last indexed: 2023-05-15</div>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="document-item">
+                                <div class="document-info">
+                                    <i class="bi bi-file-earmark-text document-icon"></i>
+                                    <div class="document-name">Constitution of Canada</div>
+                                    <div class="document-meta">Last indexed: 2023-05-10</div>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn btn-success btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    <button class="btn btn-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Add more document items as needed -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Upload Tab -->
+            <div class="tab-pane fade" id="upload" role="tabpanel" aria-labelledby="upload-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-upload"></i> Upload Documents
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-area">
+                            <i class="bi bi-cloud-upload"></i>
+                            <p>Drag and drop files here or click to upload</p>
+                            <button class="btn btn-primary">
+                                <i class="bi bi-upload"></i> Upload Files
+                            </button>
+                        </div>
+                        <div class="upload-instructions">
+                            <h3>Upload Instructions</h3>
+                            <p>Supported file formats: PDF, DOCX, TXT</p>
+                            <p>Maximum file size: 10MB</p>
+                            <p>For best results, upload official constitutional documents in their original format.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            Constitutional Knowledge Assistant &copy; 2023 - Powered by Retrieval-Augmented Generation
+        </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+   
+    
+        <script>
+            $(document).ready(function() {
+                // Theme toggle functionality
+                $('#themeToggle').click(function() {
+                    $('html').attr('data-bs-theme', 
+                        $('html').attr('data-bs-theme') === 'dark' ? 'light' : 'dark');
+                    
+                    // Toggle icon
+                    if ($('html').attr('data-bs-theme') === 'dark') {
+                        $('#themeToggle i').removeClass('bi-moon').addClass('bi-sun');
+                    } else {
+                        $('#themeToggle i').removeClass('bi-sun').addClass('bi-moon');
+                    }
+                });
+        
+                // Check system preference for dark mode
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    $('html').attr('data-bs-theme', 'dark');
+                    $('#themeToggle i').removeClass('bi-moon').addClass('bi-sun');
+                }
+        
+                // Index documents
+                $('#indexButton').click(function() {
+                    $('#indexStatus').text('Indexing documents...');
+                    
+                    $.ajax({
+                        url: '/index_documents',
+                        method: 'POST',
+                        success: function(response) {
+                            $('#indexStatus').text(response.message);
+                        },
+                        error: function(error) {
+                            $('#indexStatus').text('Error: ' + (error.responseJSON ? error.responseJSON.message : 'Failed to index documents'));
+                        }
+                    });
+                });
+        
+                // Event handler for both generate buttons
+                function generateAnswer(negate) {
+                    const query = $('#answerQuery').val().trim();
+                    
+                    if (!query) {
+                        alert('Please enter a question');
+                        return;
+                    }
+                    
+                    const resultElement = negate ? 
+                        $('#generatedNegateAnswer') : 
+                        $('#generatedAnswer');
+                    
+                    const sourcesElement = negate ? 
+                        $('#negateAnswerSources') : 
+                        $('#answerSources');
+                    
+                    resultElement.html('<div class="loading">Generating answer...</div>');
+                    sourcesElement.html('<div class="loading">Retrieving sources...</div>');
+                    
+                    if (negate) {
+                        $('#negateAnswerSection').show();
+                        $('#negateSourcesSection').show();
+                    }
+        
+                    $.ajax({
+                        url: '/generate_answer',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ 
+                            query: query,
+                            negate: negate
+                        }),
+                        success: function(response) {
+                            if (response.status === 'error') {
+                                resultElement.html(`<div class="error-message">Error: ${response.message}</div>`);
+                                return;
+                            }
+                            
+                            if (negate) {
+                                const formattedAnswer = response.answer.replace(/\n/g, '<br>');
+                                $('#generatedNegateAnswer').html(formattedAnswer);
+                                
+                                if (response.negated_query) {
+                                    const negatedQueryHtml = `<div class="negated-query">
+                                        <strong>Alternative perspective:</strong> ${response.negated_query}
+                                    </div>`;
+                                    $('#generatedNegateAnswer').prepend(negatedQueryHtml);
+                                }
+                            } else {
+                                $('#generatedAnswer').text(response.answer);
+                            }
+                            
+                            let sourcesHtml = '';
+                            if (response.sources && response.sources.length > 0) {
+                                response.sources.forEach(function(source) {
+                                    sourcesHtml += `<div class="source">
+                                        <p><strong>File:</strong> ${source.file_path}</p>
+                                        <p><strong>Relevance:</strong> ${source.similarity_score.toFixed(2)}</p>
+                                        <p><strong>Excerpt:</strong> ${source.excerpt}</p>
+                                    </div>`;
+                                });
+                            } else {
+                                sourcesHtml = '<p>No sources available</p>';
+                            }
+                            
+                            sourcesElement.html(sourcesHtml);
+                        },
+                        error: function(xhr, status, error) {
+                            resultElement.html(`<div class="error-message">Error: ${error}</div>`);
+                        }
+                    });
+                }
+        
+                // Add event listeners for both buttons
+                $('#generateAnswerBtn').click(function() {
+                   // alert("button click");
+                    generateAnswer(false);  // Pass false for the regular answer
+                });
+        
+                $('#generateNegateAnswerBtn').click(function() {
+                    generateAnswer(true);   // Pass true for the contrary answer
+                });
+        
+                // Copy answer to clipboard
+                $('#copyAnswerBtn').click(function() {
+                    const answerText = $('#generatedAnswer').text();
+                    if (answerText === 'Your answer will appear here') {
+                        alert('No answer to copy yet');
+                        return;
+                    }
+                    
+                    navigator.clipboard.writeText(answerText).then(function() {
+                        const originalText = $('#copyAnswerBtn').text();
+                        $('#copyAnswerBtn').text('Copied!');
+                        setTimeout(function() {
+                            $('#copyAnswerBtn').text(originalText);
+                        }, 2000);
+                    }, function() {
+                        alert('Failed to copy answer');
+                    });
+                });
+        
+                // Copy contrary answer to clipboard
+                $('#copyNegateAnswerBtn').click(function() {
+                    const answerText = $('#generatedNegateAnswer').text();
+                    if (answerText === 'Your contrary answer will appear here') {
+                        alert('No contrary answer to copy yet');
+                        return;
+                    }
+                    
+                    navigator.clipboard.writeText(answerText).then(function() {
+                        const originalText = $('#copyNegateAnswerBtn').text();
+                        $('#copyNegateAnswerBtn').text('Copied!');
+                        setTimeout(function() {
+                            $('#copyNegateAnswerBtn').text(originalText);
+                        }, 2000);
+                    }, function() {
+                        alert('Failed to copy contrary answer');
+                    });
+                });
+        
+                // Copy sources to clipboard
+                $('#copySourcesBtn').click(function() {
+                    const sourcesText = $('#answerSources').text();
+                    if (sourcesText === 'Sources will appear here') {
+                        alert('No sources to copy yet');
+                        return;
+                    }
+                    
+                    navigator.clipboard.writeText(sourcesText).then(function() {
+                        const originalText = $('#copySourcesBtn').text();
+                        $('#copySourcesBtn').text('Copied!');
+                        setTimeout(function() {
+                            $('#copySourcesBtn').text(originalText);
+                        }, 2000);
+                    }, function() {
+                        alert('Failed to copy sources');
+                    });
+                });
+        
+                // Copy contrary sources to clipboard
+                $('#copyNegateSourcesBtn').click(function() {
+                    const sourcesText = $('#negateAnswerSources').text();
+                    if (sourcesText === 'Contrary sources will appear here') {
+                        alert('No contrary sources to copy yet');
+                        return;
+                    }
+                    
+                    navigator.clipboard.writeText(sourcesText).then(function() {
+                        const originalText = $('#copyNegateSourcesBtn').text();
+                        $('#copyNegateSourcesBtn').text('Copied!');
+                        setTimeout(function() {
+                            $('#copyNegateSourcesBtn').text(originalText);
+                        }, 2000);
+                    }, function() {
+                        alert('Failed to copy contrary sources');
+                    });
+                });
+        
+                // Check if documents are indexed on page load
+                $.ajax({
+                    url: '/index_status',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.indexed) {
+                            $('#indexStatus').text('Documents are indexed');
+                        } else {
+                            $('#indexStatus').text('Documents not indexed yet');
+                        }
+                    },
+                    error: function() {
+                        $('#indexStatus').text('Could not determine indexing status');
+                    }
+                });
+            });
+        </script>
+    
+</body>
+</html>
+
+
+
+
+
+
+

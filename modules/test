@@ -1,0 +1,323 @@
+from typing import List, Dict, Any, Optional
+import yaml
+import openai
+import traceback
+import json
+import os
+import time
+import requests
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+class LLMManager:
+    def __init__(self, config_path: str = "config/config.yaml"):
+        print("[DEBUG] Initializing LLMManager")
+        try:
+            with open(config_path, 'r') as f:
+                self.config = yaml.safe_load(f)
+            print("[DEBUG] Config loaded successfully")
+            
+            # Initialize OpenAI client with your API key
+            openai.api_key = self.config['openai']['api_key']
+            print("[DEBUG] OpenAI API key configured")
+            
+            # Initialize other providers if configured
+            if 'anthropic' in self.config:
+                print("[DEBUG] Anthropic configuration found")
+            
+            if 'local' in self.config:
+                print("[DEBUG] Local LLM configuration found")
+                
+            print("[DEBUG] LLMManager initialized successfully")
+        except Exception as e:
+            print(f"[ERROR] Error initializing LLMManager: {e}")
+            traceback.print_exc()
+            raise
+
+    def build_prompt(self, query: str, contexts: List[str], max_context_length: int = 3000) -> str:
+        """
+        Build a prompt for the LLM with the query and context.
+        
+        Args:
+            query: The user's query
+            contexts: List of relevant context texts
+            max_context_length: Maximum length for the context
+            
+        Returns:
+            Formatted prompt string
+        """
+        print(f"[DEBUG] Building prompt for query: {query[:50]}...")
+        print(f"[DEBUG] Number of context chunks: {len(contexts)}")
+        
+        try:
+            # Join contexts and truncate if too long
+            context = "\n\n".join(contexts)
+            original_context_length = len(context)
+            if len(context) > max_context_length:
+                context = context[:max_context_length] + "..."
+                print(f"[DEBUG] Context truncated from {original_context_length} to {max_context_length} characters")
+            else:
+                print(f"[DEBUG] Context length: {len(context)} characters (under limit)")
+            
+            # Check if this is a code generation request
+            is_code_request = any(keyword in query.lower() for keyword in 
+                                ['code', 'function', 'script', 'program', 'implement', 'write'])
+            
+            print(f"[DEBUG] Is code request: {is_code_request}")
+            
+            if is_code_request:
+                prompt = f"""Based on the following context, please generate code that addresses the request.
+
+    Context:
+    {context}
+
+    Request: {query}
+
+    Please provide your answer as code with proper formatting using markdown code blocks with the appropriate language.
+    """
+            else:
+                prompt = f"""Based on the following context, please answer the question.
+
+    Context:
+    {context}
+
+    Question: {query}
+    Answer:"""
+                    
+            # Print the full prompt for debugging
+            print("\n=== FINAL PROMPT (FULL) ===")
+            print(prompt)
+            print(f"=== END OF PROMPT (Total length: {len(prompt)} characters) ===\n")
+            
+            # Also print a truncated version for the logs
+            print("\n=== Generated Prompt (Truncated) ===")
+            print(prompt[:500] + "..." if len(prompt) > 500 else prompt)
+            print(f"=== (Total prompt length: {len(prompt)} characters) ===\n")
+            
+            return prompt
+        except Exception as e:
+            print(f"[ERROR] Error in build_prompt: {e}")
+            traceback.print_exc()
+            # Return a simplified prompt as fallback
+            return f"Please answer this question or generate code for this request: {query}"
+        
+    def generate_response(self, prompt: str) -> str:
+        """Generate a response from the LLM with retry logic for transient errors"""
+        print(f"[DEBUG] Generating response for prompt of length {len(prompt)}")
+        try:
+            # Use the configured LLM provider
+            provider = self.config['llm'].get('provider', 'openai').lower()
+            
+            if provider == 'openai':
+                print("[DEBUG] Using OpenAI for response generation")
+                return self._generate_openai_response(prompt)
+            elif provider == 'anthropic':
+                print("[DEBUG] Using Anthropic for response generation")
+                return self._generate_anthropic_response(prompt)
+            elif provider == 'local':
+                print("[DEBUG] Using local LLM for response generation")
+                return self._generate_local_response(prompt)
+            else:
+                print(f"[WARNING] Unknown provider '{provider}', falling back to OpenAI")
+                return self._generate_openai_response(prompt)
+        except Exception as e:
+            print(f"[ERROR] Error in generate_response: {e}")
+            traceback.print_exc()
+            # Return a fallback response
+            return f"I encountered an error while generating a response: {str(e)}"
+
+    def _generate_openai_response(self, prompt: str) -> str:
+        """Generate a response using OpenAI API"""
+        print(f"[DEBUG] Generating OpenAI response for prompt of length {len(prompt)}")
+        try:
+            # Get model configuration
+            model = self.config['openai'].get('model', 'gpt-3.5-turbo')
+            max_tokens = self.config['openai'].get('max_tokens', 1000)
+            temperature = self.config['openai'].get('temperature', 0.7)
+            
+            print(f"[DEBUG] Using OpenAI model: {model}, max_tokens: {max_tokens}, temperature: {temperature}")
+            
+            # Check if we're using a chat model
+            if 'gpt' in model.lower() and ('turbo' in model.lower() or '4' in model):
+                print("[DEBUG] Using chat completion API")
+                response = openai.ChatCompletion.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant that provides accurate and concise responses."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=max_tokens,
+                    temperature=temperature
+                )
+                print(f"[DEBUG] OpenAI response received, token usage: {response.get('usage', {}).get('total_tokens', 'unknown')}")
+                result = response.choices[0].message.content
+                print(f"[DEBUG] Response content length: {len(result)}")
+                return result
+            else:
+                # Use completion API for non-chat models
+                print("[DEBUG] Using completion API")
+                response = openai.Completion.create(
+                    engine=model,
+                    prompt=prompt,
+                    max_tokens=max_tokens,
+                    temperature=temperature
+                )
+                print(f"[DEBUG] OpenAI response received, token usage: {response.get('usage', {}).get('total_tokens', 'unknown')}")
+                result = response.choices[0].text
+                print(f"[DEBUG] Response content length: {len(result)}")
+                return result
+        except Exception as e:
+            print(f"[ERROR] Error in _generate_openai_response: {e}")
+            traceback.print_exc()
+            raise
+
+    def _generate_anthropic_response(self, prompt: str) -> str:
+        """Generate a response using Anthropic API"""
+        print(f"[DEBUG] Generating Anthropic response for prompt of length {len(prompt)}")
+        try:
+            if 'anthropic' not in self.config:
+                raise ValueError("Anthropic configuration not found in config file")
+            
+            api_key = self.config['anthropic'].get('api_key')
+            if not api_key:
+                raise ValueError("Anthropic API key not found in config")
+            
+            model = self.config['anthropic'].get('model', 'claude-2')
+            max_tokens = self.config['anthropic'].get('max_tokens', 1000)
+            temperature = self.config['anthropic'].get('temperature', 0.7)
+            
+            print(f"[DEBUG] Using Anthropic model: {model}, max_tokens: {max_tokens}, temperature: {temperature}")
+            
+            headers = {
+                "Content-Type": "application/json",
+                "X-API-Key": api_key,
+                "anthropic-version": "2023-06-01"
+            }
+            
+            data = {
+                "model": model,
+                "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
+                "max_tokens_to_sample": max_tokens,
+                "temperature": temperature
+            }
+            
+            response = requests.post(
+                "https://api.anthropic.com/v1/complete",
+                headers=headers,
+                json=data
+            )
+            
+            if response.status_code != 200:
+                raise ValueError(f"Anthropic API returned status code {response.status_code}: {response.text}")
+            
+            result = response.json().get("completion", "")
+            print(f"[DEBUG] Anthropic response received, length: {len(result)}")
+            return result
+        except Exception as e:
+            print(f"[ERROR] Error in _generate_anthropic_response: {e}")
+            traceback.print_exc()
+            raise
+
+    def _generate_local_response(self, prompt: str) -> str:
+        """Generate a response using a local LLM"""
+        print(f"[DEBUG] Generating local LLM response for prompt of length {len(prompt)}")
+        try:
+            if 'local' not in self.config:
+                raise ValueError("Local LLM configuration not found in config file")
+            
+            endpoint = self.config['local'].get('endpoint', 'http://localhost:8000/v1/completions')
+            model = self.config['local'].get('model', 'local-model')
+            max_tokens = self.config['local'].get('max_tokens', 1000)
+            temperature = self.config['local'].get('temperature', 0.7)
+            
+            print(f"[DEBUG] Using local LLM at endpoint: {endpoint}, max_tokens: {max_tokens}, temperature: {temperature}")
+            
+            headers = {"Content-Type": "application/json"}
+            data = {
+                "model": model,
+                "prompt": prompt,
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            }
+            
+            response = requests.post(endpoint, headers=headers, json=data)
+            
+            if response.status_code != 200:
+                raise ValueError(f"Local LLM API returned status code {response.status_code}: {response.text}")
+            
+            result = response.json().get("choices", [{}])[0].get("text", "")
+            print(f"[DEBUG] Local LLM response received, length: {len(result)}")
+            return result
+        except Exception as e:
+            print(f"[ERROR] Error in _generate_local_response: {e}")
+            traceback.print_exc()
+            raise
+
+    def generate_code(self, query: str, language: str, contexts: List[str], max_context_length: int = 3000) -> str:
+        """
+        Specialized method for generating code with a more focused prompt
+        
+        Args:
+            query: The user's code request
+            language: The programming language to generate code in
+            contexts: List of relevant context texts
+            max_context_length: Maximum length for the context
+            
+        Returns:
+            Generated code as a string
+        """
+        print(f"[DEBUG] Generating code for query: {query[:50]}... in {language}")
+        try:
+            # Join contexts and truncate if too long
+            context = "\n\n".join(contexts)
+            if len(context) > max_context_length:
+                context = context[:max_context_length] + "..."
+            
+            # Build a specialized prompt for code generation
+            prompt = f"""You are a code generator, given the task, generate the code.
+            Instructions: 
+            - The Code MUST be runnable, complete and without errors. 
+            - If Code to be generated is in C or C++ language, then it MUST have a main function 
+            - The Code should have all the dependencies, libraries required to compile, build and run the code without error.
+            - The Code should not have any SENSITIVE INFORMATION such as passwords or cryptokeys.
+            - Should be suitable for deployment rather than prototyping.
+            - Include all required header files for C code such as: #include <limits.h>,
+              #include <stdarg.h> , #include  <stdio.h>, 
+              #include  <stdlib.h>, #include <string.h>, #include <cstring>, #include <unistd.h>, #include <cstdio>
+            - Make sure in C if you use malloc type cast it.
+            - Make sure in Python don't use Debug mode. For example in FLASK.
+
+             Make sure the code is:\n"
+                    - Functional (it should run without errors)\n"
+                    - Secure (avoid common vulnerabilities such as input injection, unsafe file handling, etc.)\n"
+            
+            Generate {language} code for the following request. 
+            
+Request: {query}
+
+Relevant context:
+{context}
+
+Instructions:
+1. Provide ONLY the code, with no explanations before or after
+2. Use markdown code blocks with the language specified
+3. Make sure the code is complete and functional
+4. Follow best practices for {language}
+
+```{language}
+"""
+            
+            print(f"[DEBUG] Code generation prompt created, length: {len(prompt)}")
+            
+            # Generate the response
+            response = self.generate_response(prompt)
+            
+            # Ensure the response ends with a code block closing
+            if not response.endswith("```"):
+                response += "\n```"
+            
+            print(f"[DEBUG] Code generation response received, length: {len(response)}")
+            return response
+        except Exception as e:
+            print(f"[ERROR] Error in generate_code: {e}")
+            traceback.print_exc()
+            return f"Error generating code: {str(e)}"

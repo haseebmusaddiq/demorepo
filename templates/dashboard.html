@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitutional Knowledge Assistant</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: #212529;
+            color: white;
+            padding-top: 20px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar .nav-item {
+            padding: 0 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card {
+            cursor: pointer;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box .form-control {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: var(--secondary-color);
+        }
+        
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+        }
+        
+        .message-user {
+            margin-left: auto;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 15px;
+            padding: 10px 15px;
+        }
+        
+        .message-assistant {
+            margin-right: auto;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 15px 15px 15px 0;
+            padding: 10px 15px;
+        }
+        
+        .chat-input {
+            margin-top: 15px;
+            display: flex;
+        }
+        
+        .chat-input textarea {
+            border-radius: 20px;
+            resize: none;
+        }
+        
+        .chat-input button {
+            margin-left: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .document-card {
+            cursor: pointer;
+        }
+        
+        .document-card:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .document-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .source-item {
+            border-left: 3px solid var(--primary-color);
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .source-title {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .source-excerpt {
+            font-style: italic;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h5>Constitutional AI</h5>
+            <p class="text-muted small mb-0">Knowledge Assistant</p>
+        </div>
+        
+        <div class="nav-item mt-3">
+            <a class="nav-link active" href="#" data-tab="dashboard">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a class="nav-link" href="#" data-tab="documents">
+                <i class="bi bi-file-text"></i>
+                <span>Documents</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a class="nav-link" href="#" data-tab="search">
+                <i class="bi bi-search"></i>
+                <span>Search</span>
+            </a>
+        </div>
+        
+        <div class="nav-item">
+            <a class="nav-link" href="#" data-tab="chat">
+                <i class="bi bi-chat-dots"></i>
+                <span>Ask AI</span>
+            </a>
+        </div>
+        
+        <div class="nav-item mt-auto">
+            <a class="nav-link" href="#" data-tab="settings">
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Content -->
+    <div class="content">
+        <!-- Dashboard Tab -->
+        <div class="tab-content active" id="dashboard">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Constitutional Knowledge Assistant</h1>
+                
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control" placeholder="Quick search...">
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">Welcome to the Constitutional Knowledge Assistant</h5>
+                            <p class="card-text">
+                                This platform provides comprehensive access to constitutional data from around the world.
+                                Explore constitutions, search for specific provisions, or use our AI assistant to answer your questions.
+                            </p>
+                            <div class="mt-3">
+                                <button id="indexAllButton" class="btn btn-primary">
+                                    <i class="bi bi-database-fill"></i> Index All Documents
+                                </button>
+                                <span id="indexStatus" class="ms-3 text-muted">Documents not indexed yet</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100 feature-card" onclick="showTab('documents')">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                                    <i class="bi bi-file-text text-primary fs-4"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Documents</h5>
+                            </div>
+                            <p class="card-text">View and manage constitutional documents in the system</p>
+                            <div class="text-muted" id="documentCount">Loading document count...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100 feature-card" onclick="showTab('search')">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                                    <i class="bi bi-search text-success fs-4"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Search</h5>
+                            </div>
+                            <p class="card-text">Search for specific provisions across constitutions</p>
+                            <div class="text-muted">Advanced semantic search</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow h-100 feature-card" onclick="showTab('chat')">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                                    <i class="bi bi-chat-dots text-info fs-4"></i>
+                                </div>
+                                <h5 class="card-title mb-0">Ask AI</h5>
+                            </div>
+                            <p class="card-text">Get AI-powered answers to your constitutional questions</p>
+                            <div class="text-muted">Powered by RAG technology</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-white">
+                            <h6 class="m-0 font-weight-bold">Recent Activity</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Action</th>
+                                            <th>Document</th>
+                                            <th>Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="activityTable">
+                                        <tr>
+                                            <td><span class="badge bg-primary">Search</span></td>
+                                            <td>Freedom of Speech provisions</td>
+                                            <td>Just now</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-success">Index</span></td>
+                                            <td>Constitution of India</td>
+                                            <td>2 hours ago</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="badge bg-info">Query</span></td>
+                                            <td>Right to Education</td>
+                                            <td>Yesterday</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-white">
+                            <h6 class="m-0 font-weight-bold">Quick Stats</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-2 me-3">
+                                    <i class="bi bi-file-text text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Documents</div>
+                                    <div class="h5 mb-0" id="statsDocuments">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-success bg-opacity-10 p-2 me-3">
+                                    <i class="bi bi-search text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Searches</div>
+                                    <div class="h5 mb-0" id="statsSearches">0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-info bg-opacity-10 p-2 me-3">
+                                    <i class="bi bi-chat-dots text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">AI Queries</div>
+                                    <div class="h5 mb-0" id="statsQueries">0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documents Tab -->
+        <div class="tab-content" id="documents">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Constitutional Documents</h1>
+                
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> Upload Document
+                </button>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Document Library</h6>
+                    
+                    <div class="input-group" style="max-width: 300px;">
+                        <input type="text" class="form-control" placeholder="Filter documents..." id="documentFilter">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="documentLibrary">
+                        <!-- Document cards will be populated here -->
+                        <div class="col-md-4 mb-4">
+                            <div class="card document-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="document-icon me-3">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Constitution of India</h6>
+                                            <small class="text-muted">PDF • 245 KB</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small">The Constitution of India is the supreme law of India...</p>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Uploaded: 05/01/2025</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="card document-card">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="document-icon me-3">
+                                            <i class="bi bi-file-word"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">Constitution of Pakistan</h6>
+                                            <small class="text-muted">DOCX • 189 KB</small>
+                                        </div>
+                                    </div>
+                                    <p class="card-text small">The Constitution of Pakistan establishes the framework...</p>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Uploaded: 04/28/2025</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Tab -->
+        <div class="tab-content" id="search">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Constitutional Search</h1>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold">Search Constitutional Provisions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="searchQuery" class="form-label">Search Query</label>
+                        <input type="text" class="form-control" id="searchQuery" placeholder="Enter your search query...">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Search Options</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="semanticSearch" checked>
+                            <label class="form-check-label" for="semanticSearch">
+                                Use semantic search (finds related concepts)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button class="btn btn-primary" id="searchButton">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Search Results</h6>
+                        <div id="searchResults" class="mt-3">
+                            <div class="text-muted text-center py-3">Enter a search query to see results</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Tab -->
+        <div class="tab-content" id="chat">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Ask AI Assistant</h1>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold">Constitutional Knowledge Assistant</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="aiQuery" class="form-label">What would you like to know about constitutions?</label>
+                        <textarea class="form-control" id="aiQuery" rows="4" placeholder="Enter your question here... (e.g., 'What are the fundamental rights in modern constitutions?')"></textarea>
+                    </div>
+                    
+                    <div class="text-end mb-4">
+                        <button class="btn btn-success" id="askAiButton">
+                            <i class="bi bi-lightning-charge"></i> Generate Answer
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6>Answer</h6>
+                            <button class="btn btn-sm btn-outline-primary" id="copyAiAnswer">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                        <div id="aiAnswer" class="p-3 bg-light rounded">
+                            <div class="text-muted text-center">Your answer will appear here</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Reference Sources</h6>
+                        <div id="aiSources" class="mt-2">
+                            <div class="text-muted text-center">Sources will appear here</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+<script>
+    $(document).ready(function() {
+        // Show tab based on data-tab attribute
+        function showTab(tabId) {
+            $('.tab-content').removeClass('active');
+            $('#' + tabId).addClass('active');
+            $('.nav-link').removeClass('active');
+            $('.nav-link[data-tab="' + tabId + '"]').addClass('active');
+        }
+        
+        // Tab navigation
+        $('.nav-link').click(function(e) {
+            e.preventDefault();
+            const tabId = $(this).data('tab');
+            showTab(tabId);
+        });
+        
+        // Feature cards navigation
+        $('.feature-card').click(function() {
+            const tabId = $(this).data('tab') || $(this).attr('onclick').match(/showTab\('(.+?)'\)/)[1];
+            showTab(tabId);
+        });
+        
+        // Index all documents
+        $('#indexAllButton').click(function() {
+            $('#indexStatus').text('Indexing documents...');
+            
+            $.ajax({
+                url: '/index_documents',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({}),  // Send empty JSON object
+                success: function(response) {
+                    $('#indexStatus').text(response.message);
+                    // Add to recent activity
+                    $('#recentActivity').prepend(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Indexing:</strong> ${response.message}
+                                <div class="text-muted small">Documents have been indexed</div>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Success</span>
+                        </li>
+                    `);
+                    
+                    // Reload documents after indexing
+                    loadDocuments();
+                },
+                error: function(error) {
+                    console.error("Indexing error:", error);
+                    $('#indexStatus').text('Error: ' + (error.responseJSON ? error.responseJSON.message : 'Failed to index documents'));
+                    // Add to recent activity
+                    $('#recentActivity').prepend(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Indexing Error:</strong> Failed to index documents
+                                <div class="text-muted small">Please try again</div>
+                            </div>
+                            <span class="badge bg-danger rounded-pill">Error</span>
+                        </li>
+                    `);
+                }
+            });
+        });
+        
+        // Load documents
+        function loadDocuments() {
+            $.ajax({
+                url: '/list_documents',
+                method: 'GET',
+                success: function(response) {
+                    if (response.documents && response.documents.length > 0) {
+                        let html = '';
+                        response.documents.forEach(function(doc) {
+                            html += `
+                                <div class="document-item">
+                                    <div class="document-info">
+                                        <i class="bi bi-file-text document-icon"></i>
+                                        <div>
+                                            <div class="document-name">${doc.name}</div>
+                                            <div class="document-meta">Added: ${doc.date_added || 'Unknown'} | Size: ${doc.size || 'Unknown'}</div>
+                                        </div>
+                                    </div>
+                                    <div class="document-actions">
+                                        <button class="btn btn-sm btn-outline-primary view-document" data-id="${doc.id}">
+                                            <i class="bi bi-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-document" data-id="${doc.id}">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        $('#documentList').html(html);
+                        $('#documentCount').text(`${response.documents.length} documents available`);
+                    } else {
+                        $('#documentList').html('<div class="text-center py-4">No documents found</div>');
+                        $('#documentCount').text('No documents available');
+                    }
+                },
+                error: function() {
+                    $('#documentList').html('<div class="text-center py-4">Error loading documents</div>');
+                    $('#documentCount').text('Error loading documents');
+                }
+            });
+        }
+        
+        // Load documents on page load
+        loadDocuments();
+        
+        // Check index status
+        $.ajax({
+            url: '/index_status',
+            method: 'GET',
+            success: function(response) {
+                if (response.indexed) {
+                    $('#indexStatus').text('Documents are indexed');
+                } else {
+                    $('#indexStatus').text('Documents not indexed yet');
+                }
+            },
+            error: function() {
+                $('#indexStatus').text('Could not determine indexing status');
+            }
+        });
+        
+        // File upload handling
+        $('#browseButton').click(function() {
+            $('#fileInput').click();
+        });
+        
+        $('#fileInput').change(function() {
+            handleFiles(this.files);
+        });
+        
+        const dropArea = document.getElementById('dropArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropArea.classList.add('border-primary');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('border-primary');
+        }
+        
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(files) {
+            if (files.length > 0) {
+                let html = '';
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    html += `
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-file-text me-2"></i> ${file.name}
+                                <div class="text-muted small">${(file.size / 1024).toFixed(2)} KB</div>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">Ready</span>
+                        </div>
+                    `;
+                }
+                $('#uploadQueue').html(html);
+                $('#uploadButton').prop('disabled', false);
+            }
+        }
+        
+        // Upload button
+        $('#uploadButton').click(function() {
+            const files = $('#fileInput')[0].files;
+            if (files.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            $.ajax({
+                url: '/upload_documents',
+                method: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                beforeSend: function() {
+                    $('#uploadButton').prop('disabled', true).html('<i class="bi bi-arrow-repeat spin"></i> Uploading...');
+                },
+                success: function(response) {
+                    $('#uploadButton').html('<i class="bi bi-check-circle"></i> Uploaded!');
+                    setTimeout(() => {
+                        $('#uploadButton').html('<i class="bi bi-upload"></i> Upload Files').prop('disabled', true);
+                    }, 2000);
+                    
+                    $('#uploadQueue').html('<div class="text-muted text-center py-3">No files selected</div>');
+                    $('#fileInput').val('');
+                    
+                    // Add to recent activity
+                    $('#recentActivity').prepend(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Upload:</strong> ${files.length} document(s) uploaded
+                                <div class="text-muted small">Documents have been added to the system</div>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Success</span>
+                        </li>
+                    `);
+                    
+                    // Reload documents
+                    loadDocuments();
+                },
+                error: function(error) {
+                    $('#uploadButton').html('<i class="bi bi-exclamation-circle"></i> Error');
+                    setTimeout(() => {
+                        $('#uploadButton').html('<i class="bi bi-upload"></i> Upload Files').prop('disabled', false);
+                    }, 2000);
+                    
+                    // Add to recent activity
+                    $('#recentActivity').prepend(`
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Upload Error:</strong> Failed to upload documents
+                                <div class="text-muted small">Please try again</div>
+                            </div>
+                            <span class="badge bg-danger rounded-pill">Error</span>
+                        </li>
+                    `);
+                }
+            });
+        });
+        
+        // Quick search
+        $('#quickSearchButton').click(function() {
+            const query = $('#quickSearchInput').val();
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+            
+            $('#quickSearchResults').html('<div class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Searching...</div>');
+            
+            $.ajax({
+                url: '/query',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ query: query }),
+                success: function(response) {
+                    if (response.status === 'success' && response.sources && response.sources.length > 0) {
+                        let html = '<div class="list-group">';
+                        response.sources.forEach(function(source, index) {
+                            if (index < 3) { // Show only top 3 results
+                                html += `
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">${source.file_path}</h6>
+                                            <small>Score: ${source.similarity_score.toFixed(2)}</small>
+                                        </div>
+                                        <p class="mb-1">${source.excerpt}</p>
+                                    </div>
+                                `;
+                            }
+                        });
+                        html += '</div>';
+                        $('#quickSearchResults').html(html);
+                        
+                        // Add to recent activity
+                        $('#recentActivity').prepend(`
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Search:</strong> "${query}"
+                                    <div class="text-muted small">Found ${response.sources.length} results</div>
+                                </div>
+                                <span class="badge bg-info rounded-pill">Search</span>
+                            </li>
+                        `);
+                    } else {
+                        $('#quickSearchResults').html('<div class="alert alert-info">No results found</div>');
+                    }
+                },
+                error: function() {
+                    $('#quickSearchResults').html('<div class="alert alert-danger">Error performing search</div>');
+                }
+            });
+        });
+        
+        // Advanced search
+        $('#searchButton').click(function() {
+            const query = $('#searchQuery').val();
+            const useSemanticSearch = $('#semanticSearch').is(':checked');
+            
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+            
+            $('#searchResults').html('<div class="text-center"><div class="spinner-border text-primary" role="status"></div> Searching...</div>');
+            
+            $.ajax({
+                url: '/query',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    query: query,
+                    semantic: useSemanticSearch
+                }),
+                success: function(response) {
+                    if (response.status === 'success' && response.sources && response.sources.length > 0) {
+                        let html = '';
+                        response.sources.forEach(function(source) {
+                            html += `
+                                <div class="card mb-3">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0">${source.file_path}</h6>
+                                        <span class="badge bg-primary">Score: ${source.similarity_score.toFixed(2)}</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>${source.excerpt}</p>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        $('#searchResults').html(html);
+                    } else {
+                        $('#searchResults').html('<div class="alert alert-info">No results found</div>');
+                    }
+                },
+                error: function() {
+                    $('#searchResults').html('<div class="alert alert-danger">Error performing search</div>');
+                }
+            });
+        });
+        
+        // Ask AI functionality - connects to the generate_answer endpoint
+        $('#askAiButton').click(function() {
+            const query = $('#aiQuery').val().trim();
+            
+            if (!query) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            // Store the original query for verification
+            const originalQuery = query;
+            
+            $('#aiAnswer').html('<div class="text-center"><div class="spinner-border text-primary" role="status"></div> Generating answer...</div>');
+            $('#aiSources').html('<div class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div> Retrieving sources...</div>');
+            
+            $.ajax({
+                url: '/generate_answer',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    query: query
+                }),
+                success: function(response) {
+                    console.log("AI response received:", response);
+                    
+                    // Verify that the response is for the correct query
+                    if (response.query && response.query !== originalQuery) {
+                        console.error("Query mismatch! Sent:", originalQuery, "Received:", response.query);
+                        $('#aiAnswer').html(`<div class="alert alert-warning">
+                            Warning: The system responded to a different query than what was asked. 
+                            <br>You asked: "${originalQuery}"
+                            <br>System processed: "${response.query}"
+                        </div>`);
+                        return;
+                    }
+                    
+                    // Update generated answer
+                    if (response.answer) {
+                        $('#aiAnswer').text(response.answer);
+                    } else if (response.response) {
+                        // Fallback to response field if answer is not available
+                        $('#aiAnswer').text(response.response);
+                    } else {
+                        $('#aiAnswer').text('No answer was generated.');
+                    }
+                    
+                    // Update sources
+                    let sourcesHtml = '';
+                    if (response.sources && response.sources.length > 0) {
+                        sourcesHtml = '<div class="list-group">';
+                        response.sources.forEach(function(source) {
+                            sourcesHtml += `<div class="card mb-2">
+                                <div class="card-body py-2">
+                                    <p class="mb-1"><strong>File:</strong> ${source.file_path}</p>
+                                    <p class="mb-1"><strong>Relevance:</strong> ${source.similarity_score.toFixed(2)}</p>
+                                    <p class="mb-0"><strong>Excerpt:</strong> ${source.excerpt}</p>
+                                </div>
+                            </div>`;
+                        });
+                        sourcesHtml += '</div>';
+                    } else {
+                        sourcesHtml = '<p class="text-muted">No specific sources used</p>';
+                    }
+                    
+                    $('#aiSources').html(sourcesHtml);
+                    
+                    // Add to recent activity
+                    if ($('#recentActivity').length) {
+                        $('#recentActivity').prepend(`
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>AI Query:</strong> "${query.substring(0, 30)}${query.length > 30 ? '...' : ''}"
+                                    <div class="text-muted small">Answer generated successfully</div>
+                                </div>
+                                <span class="badge bg-success rounded-pill">AI</span>
+                            </li>
+                        `);
+                    }
+                },
+                error: function(error) {
+                    console.error("AI error:", error);
+                    $('#aiAnswer').html('<div class="alert alert-danger">Error: ' + 
+                        (error.responseJSON ? error.responseJSON.message : 'Failed to generate answer') + 
+                        '</div>');
+                    $('#aiSources').html('<p class="text-muted">No sources available</p>');
+                    
+                    // Add to recent activity
+                    if ($('#recentActivity').length) {
+                        $('#recentActivity').prepend(`
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>AI Error:</strong> Failed to generate answer
+                                    <div class="text-muted small">Please try again</div>
+                                </div>
+                                <span class="badge bg-danger rounded-pill">Error</span>
+                            </li>
+                        `);
+                    }
+                }
+            });
+        });
+        
+        // Copy AI answer
+        $('#copyAiAnswer').click(function() {
+            const answerText = $('#aiAnswer').text();
+            if (answerText === 'Your answer will appear here') {
+                alert('No answer to copy yet');
+                return;
+            }
+            
+            navigator.clipboard.writeText(answerText).then(function() {
+                const originalText = $('#copyAiAnswer').html();
+                $('#copyAiAnswer').html('<i class="bi bi-check"></i> Copied!');
+                setTimeout(function() {
+                    $('#copyAiAnswer').html(originalText);
+                }, 2000);
+            }, function() {
+                alert('Failed to copy answer');
+            });
+        });
+        
+        // Document actions
+        $(document).on('click', '.view-document', function() {
+            const docId = $(this).data('id');
+            // Implement document viewing functionality
+            alert('Viewing document ID: ' + docId);
+        });
+        
+        $(document).on('click', '.delete-document', function() {
+            const docId = $(this).data('id');
+            if (confirm('Are you sure you want to delete this document?')) {
+                $.ajax({
+                    url: '/delete_document',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ id: docId }),
+                    success: function(response
+
+
+
+
+

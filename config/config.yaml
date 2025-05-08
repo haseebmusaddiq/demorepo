@@ -1,0 +1,31 @@
+paths:
+  documents_dir: "./sample_documents"
+  llm_dir: "./models"  # local model directory path
+
+models:
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+
+retrieval:
+  top_k: 5
+  chunk_size: 500
+  similarity_threshold: 0.7
+  hybrid_search_alpha: 0.7
+  rerank_weight: 0.7
+  vector_store: "supabase"  # Use "supabase" or "local"
+
+supabase:
+  collection_name: "documents"
+  # Connection string will be loaded from environment variable
+
+llm:
+  provider: "distilgpt2"
+  model_name: "distilgpt2"
+  temperature: 0.7
+  max_new_tokens: 200
+  max_context_length: 1000
+
+local:
+  max_tokens: 200
+  temperature: 0.7
+
+

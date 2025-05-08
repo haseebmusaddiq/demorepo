@@ -1,0 +1,73 @@
+// RAG System Workflow
+digraph RAG_Workflow {
+	dpi=300 rankdir=TB size="11,8"
+	node [fontname=Arial fontsize=12 shape=box style="filled,rounded"]
+	edge [fontname=Arial fontsize=10]
+	subgraph cluster_1 {
+		color="#3498db" fontcolor=white label="1. Document Indexing" style=filled
+		A1 [label="doc_processor.load_documents()" fillcolor="#2980b9" fontcolor=white style=filled]
+		A2 [label="Split into chunks" fillcolor="#2980b9" fontcolor=white style=filled]
+		A3 [label="embedding_manager.generate_embeddings()" fillcolor="#2980b9" fontcolor=white style=filled]
+		A4 [label="vector_store.add_documents()" fillcolor="#2980b9" fontcolor=white style=filled]
+		A1 -> A2
+		A2 -> A3
+		A3 -> A4
+	}
+	subgraph cluster_2 {
+		color="#2ecc71" fontcolor=white label="2. Query Processing" style=filled
+		B1 [label="app.route('/query')" fillcolor="#27ae60" fontcolor=white style=filled]
+		B2 [label="embedding_manager.generate_query_embedding()" fillcolor="#27ae60" fontcolor=white style=filled]
+		B3 [label="vector_store.hybrid_search()" fillcolor="#27ae60" fontcolor=white style=filled]
+		B4 [label="Retrieve top_k documents" fillcolor="#27ae60" fontcolor=white style=filled]
+		B1 -> B2
+		B2 -> B3
+		B3 -> B4
+	}
+	subgraph cluster_3 {
+		color="#e74c3c" fontcolor=white label="3. Reranking" style=filled
+		C1 [label="rerank_documents()" fillcolor="#c0392b" fontcolor=white style=filled]
+		C2 [label="cross_encoder.predict()" fillcolor="#c0392b" fontcolor=white style=filled]
+		C3 [label="Calculate final_score" fillcolor="#c0392b" fontcolor=white style=filled]
+		C4 [label="Sort documents by score" fillcolor="#c0392b" fontcolor=white style=filled]
+		C1 -> C2
+		C2 -> C3
+		C3 -> C4
+	}
+	subgraph cluster_4 {
+		color="#f39c12" fontcolor=white label="4. Context Building" style=filled
+		D1 [label="Format document chunks" fillcolor="#d35400" fontcolor=white style=filled]
+		D2 [label="Create context strings with file_path" fillcolor="#d35400" fontcolor=white style=filled]
+		D3 [label="llm_manager.build_prompt()" fillcolor="#d35400" fontcolor=white style=filled]
+		D1 -> D2
+		D2 -> D3
+	}
+	subgraph cluster_5 {
+		color="#9b59b6" fontcolor=white label="5. Response Generation" style=filled
+		E1 [label="llm_manager.generate_response()" fillcolor="#8e44ad" fontcolor=white style=filled]
+		E2 [label="Select LLM provider" fillcolor="#8e44ad" fontcolor=white style=filled]
+		E3 [label="Process response" fillcolor="#8e44ad" fontcolor=white style=filled]
+		E1 -> E2
+		E2 -> E3
+	}
+	subgraph cluster_6 {
+		color="#1abc9c" fontcolor=white label="6. Result Presentation" style=filled
+		F1 [label="Format JSON response" fillcolor="#16a085" fontcolor=white style=filled]
+		F2 [label="Include source information" fillcolor="#16a085" fontcolor=white style=filled]
+		F3 [label="Return jsonify response" fillcolor="#16a085" fontcolor=white style=filled]
+		F1 -> F2
+		F2 -> F3
+	}
+	DB [label="Vector Database" fillcolor="#34495e" fontcolor=white shape=cylinder style=filled]
+	Config [label="config.yaml" fillcolor="#95a5a6" fontcolor=white shape=note style=filled]
+	A4 -> B1
+	B4 -> C1
+	C4 -> D1
+	D3 -> E1
+	E3 -> F1
+	A4 -> DB [label="Store embeddings" style=dashed]
+	DB -> B3 [label="Query database" style=dashed]
+	Config -> B3 [label="top_k, alpha" style=dashed]
+	Config -> C3 [label=rerank_weight style=dashed]
+	Config -> D3 [label=max_context_length style=dashed]
+	Config -> E2 [label="provider selection" style=dashed]
+}

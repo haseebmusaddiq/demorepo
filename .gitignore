@@ -1,7 +1,4 @@
-﻿requirements.txt
-*.yaml
-*.yml
-
+﻿
 
 # Python virtual environment
 rag_env/

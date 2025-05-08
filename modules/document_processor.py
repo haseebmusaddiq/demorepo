@@ -8,19 +8,14 @@ import pandas as pd
 import nltk
 from nltk.tokenize import sent_tokenize
 import numpy as np
-import re
 
 class DocumentProcessor:
     def __init__(self, config_path: str = "config/config.yaml"):
-        # Initialize NLTK - only download punkt, not punkt_tab
+        # Initialize NLTK
         try:
             nltk.data.find('tokenizers/punkt')
         except LookupError:
-            print("Downloading NLTK punkt tokenizer data...")
             nltk.download('punkt')
-        
-        # Set environment variable to disable tokenizers parallelism
-        os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
         # Load config
         with open(config_path, 'r') as f:
@@ -132,32 +127,10 @@ class DocumentProcessor:
         """
         if not text or not text.strip():
             return []
-        
-        try:
-            # Split into sentences using only punkt (not punkt_tab)
-            try:
-                # Simple sentence splitting as fallback
-                sentences = []
-                # First try with NLTK's sent_tokenize
-                try:
-                    sentences = sent_tokenize(text)
-                except Exception as e:
-                    print(f"NLTK tokenization failed: {e}, using fallback")
-                    # Simple fallback: split by periods, question marks, and exclamation points
-                    for s in re.split(r'(?<=[.!?])\s+', text):
-                        if s.strip():
-                            sentences.append(s.strip())
             
-                if not sentences:
-                    # If still no sentences, just split by newlines and limit length
-                    sentences = [s.strip() for s in text.split('\n') if s.strip()]
-                    if not sentences:
-                        # Last resort: just chunk by character count
-                        return [text[i:i+self.chunk_size] for i in range(0, len(text), self.chunk_size)]
-            except Exception as e:
-                print(f"Sentence splitting failed: {e}, using simple chunking")
-                # Simple chunking as last resort
-                return [text[i:i+self.chunk_size] for i in range(0, len(text), self.chunk_size)]
+        try:
+            # Split into sentences
+            sentences = sent_tokenize(text)
             
             chunks = []
             current_chunk = []
@@ -167,25 +140,21 @@ class DocumentProcessor:
                 sentence = sentence.strip()
                 if not sentence:
                     continue
-                
+                    
                 sentence_size = len(sentence)
                 
                 if current_size + sentence_size > self.chunk_size:
                     if current_chunk:
-                        # Add the current chunk to the list
+                        # Add overlap with previous chunk
+                        overlap = current_chunk[-1] if current_chunk else ""
                         chunks.append(" ".join(current_chunk))
-                        # Start a new chunk with the current sentence
-                        current_chunk = [sentence]
-                        current_size = sentence_size
+                        current_chunk = [overlap, sentence] if overlap else [sentence]
+                        current_size = len(overlap) + sentence_size if overlap else sentence_size
                     else:
-                        # Handle very long sentences by splitting them
+                        # Handle very long sentences
                         chunks.append(sentence[:self.chunk_size])
-                        if len(sentence) > self.chunk_size:
-                            current_chunk = [sentence[self.chunk_size:]]
-                            current_size = len(current_chunk[0])
-                        else:
-                            current_chunk = []
-                            current_size = 0
+                        current_chunk = [sentence[self.chunk_size:]]
+                        current_size = len(current_chunk[0])
                 else:
                     current_chunk.append(sentence)
                     current_size += sentence_size
@@ -200,22 +169,14 @@ class DocumentProcessor:
                 # Clean up whitespace
                 chunk = ' '.join(chunk.split())
                 # Only keep chunks above minimum size
-                if len(chunk) >= 50:  # Reduced minimum size
+                if len(chunk) >= 100:
                     processed_chunks.append(chunk)
             
-            return processed_chunks if processed_chunks else [text[:self.chunk_size]]
+            return processed_chunks
             
         except Exception as e:
             print(f"Error during text chunking: {str(e)}")
-            # Fallback to simple chunking
-            print("Falling back to simple chunking")
-            # Split text into chunks of chunk_size
-            chunks = []
-            for i in range(0, len(text), self.chunk_size):
-                chunk = text[i:i + self.chunk_size]
-                if chunk.strip():  # Only keep non-empty chunks
-                    chunks.append(chunk)
-            return chunks if chunks else [text[:self.chunk_size]]
+            return [text[:self.chunk_size]]  # Fallback to simple chunking
 
     def extract_metadata(self, file_path: str, text: str) -> Dict[str, Any]:
         """Extract metadata from documents for better context"""
@@ -229,5 +190,3 @@ class DocumentProcessor:
             'modification_date': os.path.getmtime(file_path),
         }
         return metadata
-
-

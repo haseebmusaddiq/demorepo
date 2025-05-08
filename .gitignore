@@ -1,0 +1,26 @@
+﻿requirements.txt
+*.yaml
+*.yml
+
+
+# Python virtual environment
+rag_env/
+new_rag_env/
+__pycache__/
+*.py[cod]
+*.class
+
+# Environment variables
+.env
+
+# Local configuration
+config.local.yaml
+
+# Logs
+*.log
+
+# Model files (if they're large)
+models/
+
+# Temporary files
+temp/
